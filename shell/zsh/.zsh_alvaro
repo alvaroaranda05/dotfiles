@@ -1,0 +1,133 @@
+echo "Hola, Álvaro!"
+
+############ REGISTER #############
+
+#Add installed with Brew apps to path
+export PATH=$PATH:/usr/local/bin:/opt/homebrew/bin
+
+#Add other apps to path
+export PATH=$PATH:$JAVA_HOME/bin
+
+#Register nvm
+source $(brew --prefix nvm)/nvm.sh
+
+############ ALIAS ############
+
+#ALIAS DIRECTORY
+alias sudo="sudo "
+alias ..="cd .."
+alias ...="cd ../.."
+alias ll="exa -l"
+alias la="exa -la"
+alias home= "cd $HOME"
+alias cdc="cd $HOME/dev"
+alias cdw="cdc; cd repo/deiser"
+alias cdp="cdc; cd repo/alvaro"
+alias cdpfd="cdw; cd projectrak/dc"
+alias cdpfc="cdw; cd projectrak/cloud"
+alias cdexpd="cdw; cd exporter/dc"
+alias cdexpc="cdw; cd exporter/cloud"
+alias cdforge="cdw; cd forge"
+alias cdwl="cdforge; cd jira/waiting-list"
+alias cdkit="cdw; cd deiserkit"
+alias code="/usr/local/bin/code"
+alias idea="$HOME/Library/Application\ Support/JetBrains/Toolbox/scripts/idea"
+alias fleet="$HOME/Library/Application\ Support/JetBrains/Toolbox/scripts/fleet"
+
+#ALIAS GIT
+alias gaa="git add -A"
+#alias gc="git commit"
+alias gs="git status"
+alias gd="git diff"
+alias gf="git fetch --all -p"
+alias gps="git push"
+alias gpsf="git push --force"
+alias gpl="git pull --autostash"
+alias gplr="git pull --rebase --autostash"
+alias gb="git branch"
+
+############   ############
+
+
+############ FUNCTIONS ############
+
+#FUNCTIONS GIT
+function gc {
+  git add -A
+
+  if [ -z "$1" ]; then
+    git commit - S
+  else
+    git commit -S -m"$1"
+  fi
+}
+
+#FUNCTIONS OTHER
+function test_zsh {
+    for i in $(seq 1 10); do
+        time zsh -i -c exit;
+    done
+}
+
+function progress_bar() {
+  local duration=${1}
+
+    already_done() { for ((done=0; done<$elapsed; done++)); do printf "▇"; done }
+    remaining() { for ((remain=$elapsed; remain<$duration; remain++)); do printf " "; done }
+    percentage() { printf "| %s%%" $(( (($elapsed)*100)/($duration)*100/100 )); }
+    clean_line() { printf "\r"; }
+
+  for (( elapsed=1; elapsed<=$duration; elapsed++ )); do
+      already_done; remaining; percentage
+      sleep 1
+      clean_line
+  done
+  clean_line
+}
+
+function update_zim() {
+    zimfw update && zimfw upgrade
+}
+
+function select_open_files() {
+    selected=$(ps axc | awk 'NR > 1' | awk '{print substr($0,index($0,$5))}' | sort -u | fzf)
+
+    if [ ! -z $1 ]; then
+      lsof -r 2 -c "$selected"
+    else
+      lsof -c "$selected"
+    fi
+}
+
+#FUNCTIONS ASYNC
+function aqt {
+  fname=${declare -f -F algo_que_tarda}
+
+  [ -n "$fname" || source "$HOME/algo_que_tarda.sh" ]
+
+  algo_que_tarda
+}
+
+############   ############
+
+
+############ BINDINGS ############
+
+_display_message() {
+  dirtomove=$(ls -ad */| fzf)
+  cd "$dirtomove"
+}
+
+zle       -N    _display_message
+bindkey  '^h'  _display_message
+
+
+_reverse_search() {
+  local selected_command=$(fc -rl 1 | awk '{$1="";print substr($0,2)}' | fzf)
+  LBUFFER=$selected_command
+}
+
+zle -N _reverse_search
+bindkey '^r' _reverse_search
+
+############   ############
